@@ -1,4 +1,5 @@
 // https://medium.com/@quasimik/monte-carlo-tree-search-applied-to-letterpress-34f41c86e238
+#pragma once
 
 #include <iostream>
 #include <vector>

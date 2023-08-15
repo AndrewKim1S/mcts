@@ -1,13 +1,12 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
 
-struct GameState {
-
-	virtual std::vector<GameState> getPossibleStates();
+// Abstract class for a game state
+class GameState {
+	public:
+		virtual std::vector<GameState> getPossibleStates();
+		virtual void print(std::ostream &out) const;
 };
 
-struct ConnectFourState : GameState {
-	void test() {
-		std::cout << "test" << std::endl;
-	}
-};
