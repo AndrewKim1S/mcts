@@ -1,11 +1,72 @@
 #include "ConnectFour.h"
 
+// Connect Four State implementation
+ConnectFourState::ConnectFourState() {}
+
+
+ConnectFourState::ConnectFourState(std::vector<std::vector<Player>> board, Player turn) {
+	_board = board;
+	_playerTurn = turn;
+}
+
+
+ConnectFourState::~ConnectFourState() {}
+
+
+void ConnectFourState::setBoard(std::vector<std::vector<Player>> board) {
+	_board = board;
+}
+
+
+void ConnectFourState::setPlayerTurn(Player p) {
+	_playerTurn = p;
+}
+
+
+std::string ConnectFourState::displayState() const {
+	std::string board = "";
+	size_t rows = _board.size();
+	size_t cols = _board[0].size();
+	for(size_t i = 0; i < rows; ++i) {
+		for(size_t j = 0; j < cols; ++j) {
+			switch(_board[i][j]) {
+				case Player::PLAYER_X:
+					board += "|X";
+					break;
+				case Player::PLAYER_O:
+					board += "|O";
+					break;
+				default:
+					board += "| ";
+			}
+		}
+		board += "|\n";
+	}
+	board+= (_playerTurn == Player::PLAYER_X) ? "X" : "O";
+	return board;
+}
+
+
+std::vector<ConnectFourState> ConnectFourState::getAllPossibleStates() {
+	std::vector<ConnectFourState> options;
+	return options;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const ConnectFourState &state) {
+	os << state.displayState();
+	return os;
+}
+
+
+// Connect Four game implementation
 ConnectFour::ConnectFour(int rows, int cols) {
 	_rows = (rows < 4) ? 4 : rows;
 	_cols = (cols < 4) ? 4 : cols;
 	_board.resize(rows, std::vector<Player>(cols, Player::NONE));
 	_currentPlayer = Player::PLAYER_X;
 	_winner = Player::NONE;
+	_state = ConnectFourState(_board, _currentPlayer);
 
 	_btmHeader = "";
 	for(int i = 0; i <= _rows; ++i) {
@@ -14,9 +75,11 @@ ConnectFour::ConnectFour(int rows, int cols) {
 	_btmHeader += "\n";
 }
 
+
 ConnectFour::~ConnectFour() {
 
 }
+
 
 std::string ConnectFour::displayBoard() {
 	std::string board = "";
@@ -40,6 +103,7 @@ std::string ConnectFour::displayBoard() {
 	return board;
 }
 
+
 bool ConnectFour::playMove(int col) {
 	if(col < 0 || col >= _cols) {
 		std::cout << "Invalid Column" << std::endl;
@@ -50,12 +114,15 @@ bool ConnectFour::playMove(int col) {
 			_board[i][col] = _currentPlayer;
 			_currentPlayer = (_currentPlayer == Player::PLAYER_X) ? 
 				Player::PLAYER_O : Player::PLAYER_X;
+			_state.setBoard(_board);
+			_state.setPlayerTurn(_currentPlayer);
 			return true;
 		}
 	}
 	std::cout << "column is full" << std::endl;
 	return false;
 }
+
 
 bool ConnectFour::checkWin() {
 	for(int i = 0; i < _rows; ++i) {
@@ -100,6 +167,8 @@ bool ConnectFour::checkWin() {
 	return false;
 }
 
-ConnectFourState ConnectFour::getGameState() {
 
+ConnectFourState ConnectFour::getGameState() {
+	return _state;
 }
+

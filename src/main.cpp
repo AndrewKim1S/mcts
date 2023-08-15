@@ -1,5 +1,4 @@
-#include "MonteCarloTreeSearch.h"
-#include "ConnectFour.h"
+#include "MonteCarloTreeSearch.hpp"
 
 
 void playConnectFour() {
@@ -12,9 +11,10 @@ void playConnectFour() {
 		std::cout << "\n";
 		game.playMove(userInput);
 	}
+	
 	std::cout << game.displayBoard() << std::endl;
 	auto winner = game.getWinner();
-	if(winner == ConnectFour::Player::PLAYER_X) {
+	if(winner == Player::PLAYER_X) {
 		std::cout << "X wins" << std::endl;
 	} else {
 		std::cout << "O wins" << std::endl;
@@ -24,7 +24,12 @@ void playConnectFour() {
 
 int main() {
 
-	playConnectFour();
+	// playConnectFour();
+
+	ConnectFour game {6,7};
+	ConnectFourState start {game.getGameState() };
+	std::cout << start << std::endl;
+	Node<ConnectFourState> root {NULL, start};
 
 	return 0;
 }
