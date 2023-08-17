@@ -24,6 +24,7 @@ void playConnectFour() {
 
 
 int main() {
+	srand((unsigned)time(0));
 
 	// playConnectFour();
 
@@ -31,11 +32,13 @@ int main() {
 
 	ConnectFourState start {game.getGameState()};
 	auto nextStates = start.getAllPossibleStates();
-	for(auto &x : nextStates) {
-		std::cout << x << std::endl;
-	}
 	
 	Node<ConnectFourState> root {nullptr, start};
+
+	// testing 
+	/*for(int i = 0; i < 7; i++) {
+		std::cout << root.getNewChild()->_state << std::endl;;
+	}*/
 
 	MonteCarloTreeSearch<ConnectFourState> mcts {&root};
 	mcts.runSearch();
