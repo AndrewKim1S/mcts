@@ -1,7 +1,7 @@
 # Compiler and Flags
 CC = g++
 CFLAGS = -Wall -g
-#CFLAGS += -fsanitize=address -static-libasan 
+CFLAGS += -fsanitize=address -static-libasan 
 
 # Source and Build Directories
 SRCDIR = src

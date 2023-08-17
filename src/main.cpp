@@ -22,14 +22,24 @@ void playConnectFour() {
 	std::cout << "Game Over" << std::endl;
 }
 
+
 int main() {
 
 	// playConnectFour();
 
 	ConnectFour game {6,7};
-	ConnectFourState start {game.getGameState() };
-	std::cout << start << std::endl;
-	Node<ConnectFourState> root {NULL, start};
+
+	ConnectFourState start {game.getGameState()};
+	auto nextStates = start.getAllPossibleStates();
+	for(auto &x : nextStates) {
+		std::cout << x << std::endl;
+	}
+	
+	Node<ConnectFourState> root {nullptr, start};
+
+	MonteCarloTreeSearch<ConnectFourState> mcts {&root};
+	mcts.runSearch();
+
 
 	return 0;
 }

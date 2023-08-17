@@ -3,11 +3,12 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <chrono>
 
 #include "ConnectFour.h"
 
 
-// Node 
+/* Node class */
 template<class State>
 class Node {
 
@@ -18,6 +19,10 @@ class Node {
 
 			_totalNumSim = 0;
 			_winNumSim = 0;
+
+			// Change ?
+			_allPossibleStates = _state.getAllPossibleStates();
+			_possibleNextStates = _allPossibleStates.size();
 		}
 
 		~Node() {
@@ -35,47 +40,80 @@ class Node {
 			return winRate + explorationTerm;
 		}
 
+		void getAllPossibleStates() {
+
+		}
+
+		bool isLeaf() {
+			return _children.size() == 0;
+		}
+
+		bool fullyExpanded() {
+			return _possibleNextStates == _children.size();
+		}
+
 		State _state;
 		Node *_parent;
 		std::vector<Node*> _children;
-		
+		std::vector<State> _allPossibleStates;
+
+		double _possibleNextStates;
 		double _totalNumSim;
 		double _winNumSim;
 		const double _explorationParameter = sqrt(2);
 };
 
 
-// MCTS 
+/* MCTS class */
 template<class State>
 class MonteCarloTreeSearch {
 	
 	public:
-		MonteCarloTreeSearch() {
-
-		}
+		MonteCarloTreeSearch() {}
 		
 		MonteCarloTreeSearch(Node<State> *root) {
 			_root = root;
 		}
 		
-		~MonteCarloTreeSearch() {
-			// delete _root;
-		}
-		
+		~MonteCarloTreeSearch() {}
+	
+		/* Run a monte carlo search for the next best move */
 		void runSearch() {
-			bool continueSearch = true;
-			while(continueSearch) {
-				/*
+			Node<State> *selectedNode = selection(_root);
+			/*
+			auto start = std::chrono::system_clock::now();
+			while(std::chrono::system_clock::now() - start < _timeParameter) {
+			*/	/*
 				Node *selectedNode = selection(_root);
 				Node *expandedNode = expansion(selectedNode);
 				double simulationResult = simulation(expandedNode);
 				backpropogation(expandedNode, simulationResult);
-			*/}
+				*/
+		//	}
 		}
 
-		Node<State>* selection(Node<State> *currentNode);
+		/* Find a leaf node with the best UCT score */
+		Node<State>* selection(Node<State> *rootNode) {
+			Node<State> *current = rootNode;
+			while(!current->isLeaf() && current->fullyExpanded()) {
 
-		Node<State>* expansion(Node<State> *node);
+				double bestUCT = -1.0;
+				Node<State> *bestChild = nullptr;
+				for(size_t i = 0; i < current->_children.size(); i++) {
+					if(current->_children[i]->UCTScore() > bestUCT) {
+						bestUCT = current->_children[i]->UCTScore();
+						bestChild = current->_children[i];
+					}
+				}
+				current = bestChild;
+			}
+			return current;
+		}
+
+		/* Expand the selected node by creating a child node */
+		Node<State>* expansion(Node<State> *node) {
+
+		}
 
 		double simulation(Node<State> *node);
 
@@ -83,6 +121,8 @@ class MonteCarloTreeSearch {
 		
 	private:
 		Node<State> *_root;
+
+		const double _timeParameter = 10000; 
 
 };
 

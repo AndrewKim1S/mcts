@@ -1,6 +1,6 @@
 #include "ConnectFour.h"
 
-// Connect Four State implementation
+/* Connect Four State implementation */
 ConnectFourState::ConnectFourState() {}
 
 
@@ -49,6 +49,18 @@ std::string ConnectFourState::displayState() const {
 
 std::vector<ConnectFourState> ConnectFourState::getAllPossibleStates() {
 	std::vector<ConnectFourState> options;
+	for(size_t col = 0; col < _board[0].size(); col++) {
+		auto copyBoard = _board;
+		for(int i = _board.size()-1; i >= 0; --i) {
+			if(_board[i][col] == Player::NONE) {
+				copyBoard[i][col] = _playerTurn;
+				Player nextPlayer = (_playerTurn == Player::PLAYER_X) ? 
+					Player::PLAYER_O : Player::PLAYER_X;
+				options.push_back(ConnectFourState(copyBoard, nextPlayer));
+				break;
+			}
+		}
+	}
 	return options;
 }
 
@@ -59,7 +71,7 @@ std::ostream& operator<<(std::ostream& os, const ConnectFourState &state) {
 }
 
 
-// Connect Four game implementation
+/* Connect Four game implementation */
 ConnectFour::ConnectFour(int rows, int cols) {
 	_rows = (rows < 4) ? 4 : rows;
 	_cols = (cols < 4) ? 4 : cols;
