@@ -4,9 +4,15 @@
 ConnectFourState::ConnectFourState() {}
 
 
+ConnectFourState::ConnectFourState(Player winner) {
+	_winner = winner;
+}
+
+
 ConnectFourState::ConnectFourState(std::vector<std::vector<Player>> board, Player turn) {
 	_board = board;
 	_playerTurn = turn;
+	_winner = Player::NONE;
 }
 
 
@@ -42,7 +48,7 @@ std::string ConnectFourState::displayState() const {
 		}
 		board += "|\n";
 	}
-	board+= (_playerTurn == Player::PLAYER_X) ? "X" : "O";
+	board+= (_playerTurn == Player::PLAYER_X) ? "Player: X" : "Player: O";
 	return board;
 }
 
@@ -62,6 +68,52 @@ std::vector<ConnectFourState> ConnectFourState::getAllPossibleStates() {
 		}
 	}
 	return options;
+}
+
+
+bool ConnectFourState::gameOver() {
+	int _rows = _board.size();
+	int _cols = _board[0].size();
+	for(int i = 0; i < _rows; ++i) {
+		for(int j = 0; j <= _cols -4; ++j) {
+			auto x = _board[i][j];
+			if(x != Player::NONE 
+				&& _board[i][j+1] == x && _board[i][j+2] == x && _board[i][j+3] == x) {
+				_winner = x;
+				return true;
+			}
+		}
+	}
+	
+	for(int i = 0; i <= _rows-4; ++i) {
+		for(int j = 0; j < _cols; ++j) {
+			auto x = _board[i][j];
+			if(x != Player::NONE 
+				&& _board[i+1][j] == x && _board[i+2][j] == x && _board[i+3][j] == x) {
+				_winner = x;
+				return true;
+			}
+		}
+	}
+
+	for(int i = 0; i <= _rows-4; ++i) {
+		for(int j = 0; j <= _cols-4; ++j) {
+			auto x = _board[i][j];
+			if(x!=Player::NONE && _board[i+1][j+1] == x && _board[i+2][j+2] == x &&
+				_board[i+3][j+3] == x) {
+				_winner = x;
+				return true;
+			}
+			x = _board[i][j+3];
+			if(x!=Player::NONE && _board[i+1][j+2] == x && _board[i+2][j+1] == x &&
+				_board[i+3][j] == x) {
+				_winner = x;
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 
@@ -88,9 +140,7 @@ ConnectFour::ConnectFour(int rows, int cols) {
 }
 
 
-ConnectFour::~ConnectFour() {
-
-}
+ConnectFour::~ConnectFour() {}
 
 
 std::string ConnectFour::displayBoard() {

@@ -34,14 +34,18 @@ int main() {
 	auto nextStates = start.getAllPossibleStates();
 	
 	Node<ConnectFourState> root {nullptr, start};
+	ConnectFourState winner {Player::PLAYER_X};
 
 	// testing 
 	/*for(int i = 0; i < 7; i++) {
 		std::cout << root.getNewChild()->_state << std::endl;;
 	}*/
 
-	MonteCarloTreeSearch<ConnectFourState> mcts {&root};
+	MonteCarloTreeSearch<ConnectFourState> mcts {&root, winner};
 	mcts.runSearch();
+
+	// std::cout << mcts << std::endl;
+	// std::cout << "\u251C\u2500" << std::endl;
 
 
 	return 0;

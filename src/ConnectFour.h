@@ -15,6 +15,7 @@ enum class Player {
 class ConnectFourState{
 	public:
 		ConnectFourState();
+		ConnectFourState(Player winner);
 		ConnectFourState(std::vector<std::vector<Player>> board, Player turn);
 		~ConnectFourState();
 		
@@ -22,11 +23,13 @@ class ConnectFourState{
 		void setPlayerTurn(Player p);
 		std::string displayState() const;
 		std::vector<ConnectFourState> getAllPossibleStates();
+		bool gameOver();
 
 		friend std::ostream& operator<<(std::ostream& os, const ConnectFourState &state);
 
 		std::vector<std::vector<Player>> _board;
 		Player _playerTurn;
+		Player _winner;
 };
 
 

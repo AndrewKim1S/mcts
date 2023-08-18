@@ -20,6 +20,7 @@ class Node {
 
 			_totalNumSim = 0;
 			_winNumSim = 0;
+			_uctScore = 0;
 
 			_unexpandedStates = _state.getAllPossibleStates();
 			_possibleNextStates = _unexpandedStates.size();
@@ -32,12 +33,18 @@ class Node {
 		}
 
 		/* Get the UCT Score of the Node */
-		double UCTScore() {
+		double getUCTScore() {
+			return _uctScore;
+		}
+
+		void updateUCTScore(double win) {
+			_totalNumSim ++;
+			_winNumSim += win;
 			double winRate = (_totalNumSim == 0) ? 0 : _winNumSim/_totalNumSim;
 			double sp = (_parent == nullptr) ? 0 : _parent->_totalNumSim;
 			double explorationTerm = (sp == 0) ? 0 : 
 				_explorationParameter * sqrt(log(sp)/_totalNumSim);
-			return winRate + explorationTerm;
+			_uctScore = winRate + explorationTerm;
 		}
 
 		/* Add a new child of potential next state */
@@ -61,6 +68,14 @@ class Node {
 			return _possibleNextStates == _children.size();
 		}
 
+		/* text representation of node */
+		friend std::ostream& operator<<(std::ostream& os, const Node<State> &n) { 
+			os << n._state;
+			os << "\nUCT Score: " ;
+			os << n._uctScore;
+			os << "\n";
+			return os;
+		}
 		
 		State _state;
 		Node *_parent;
@@ -71,6 +86,7 @@ class Node {
 		double _totalNumSim;
 		double _winNumSim;
 		double _explorationParameter = sqrt(2);
+		double _uctScore;
 };
 
 
@@ -81,29 +97,31 @@ class MonteCarloTreeSearch {
 	public:
 		MonteCarloTreeSearch() {}
 		
-		MonteCarloTreeSearch(Node<State> *root) {
+		MonteCarloTreeSearch(Node<State> *root, State winner) {
 			_root = root;
+			_winning = winner;
 		}
 		
 		~MonteCarloTreeSearch() {}
 	
 		/* Run a monte carlo search for the next best move */
 		void runSearch() {
-			Node<State> *selectedNode = selection(_root);
-			std::cout << selectedNode->_state << std::endl;
-			
-			Node<State> *expandedNode = expansion(selectedNode);
-			std::cout << expandedNode->_state << std::endl;
-			/*
-			auto start = std::chrono::system_clock::now();
-			while(std::chrono::system_clock::now() - start < _timeParameter) {
-			*/	/*
-				Node *selectedNode = selection(_root);
-				Node *expandedNode = expansion(selectedNode);
+			auto start = std::chrono::high_resolution_clock::now();
+			int iteration = 0;
+
+			while(true) {
+				Node<State> *selectedNode = selection(_root);
+				Node<State> *expandedNode = expansion(selectedNode);
 				double simulationResult = simulation(expandedNode);
 				backpropogation(expandedNode, simulationResult);
-				*/
-		//	}
+				
+				auto end = std::chrono::high_resolution_clock::now();
+				std::chrono::duration<double> elapsed = start - end;
+				if(iteration > 500){
+					break;
+				}
+				iteration ++;
+			}
 		}
 
 		/* Find a leaf node with the best UCT score */
@@ -114,8 +132,8 @@ class MonteCarloTreeSearch {
 				double bestUCT = -1.0;
 				Node<State> *bestChild = nullptr;
 				for(size_t i = 0; i < current->_children.size(); i++) {
-					if(current->_children[i]->UCTScore() > bestUCT) {
-						bestUCT = current->_children[i]->UCTScore();
+					if(current->_children[i]->getUCTScore() > bestUCT) {
+						bestUCT = current->_children[i]->getUCTScore();
 						bestChild = current->_children[i];
 					}
 				}
@@ -130,16 +148,37 @@ class MonteCarloTreeSearch {
 		}
 
 		/* Simulate the node until an endgame state is reached */
-		double simulation(Node<State> *node);
+		// TODO error 
+		double simulation(Node<State> *node) {
+			State gameState = node->_state;
+			while(!gameState.gameOver()) {
+				auto options = gameState.getAllPossibleStates();
+				gameState = options[rand()%options.size()];
+			}
+			return _winning._winner == gameState._winner;
+		}
 
-		void backpropogation(Node<State> *node, double result);
-		
-		friend std::ostream& operator<<(std::ostream& os, const ConnectFourState &state);
+		/* Backpropogate the result to the current root of the tree */
+		void backpropogation(Node<State> *node, double result) {
+			Node<State> *current = node;
+			while(current != nullptr) {
+				current->updateUCTScore(result);
+				current = current->_parent;
+			}
+		}
+	
+		/* text representation of mcts */
+		friend std::ostream& operator<<(std::ostream& os, const MonteCarloTreeSearch &mcts) {
+			return os;	
+		}
 		
 	private:
 		Node<State> *_root;
+		State _winning;
 
-		const double _timeParameter = 10000; 
+		double _timeParameter = 10000; 
+
+		
 
 };
 
