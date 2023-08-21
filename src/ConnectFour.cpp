@@ -234,3 +234,12 @@ ConnectFourState ConnectFour::getGameState() {
 	return _state;
 }
 
+void ConnectFour::setGameState(ConnectFourState s) {
+	_currentPlayer = (_currentPlayer == Player::PLAYER_X) ? 
+		Player::PLAYER_O : Player::PLAYER_X;
+	for(size_t i = 0; i < s._board.size(); i++) {
+		for(size_t j = 0; j < s._board[i].size(); j++) {
+			_board[i][j] = s._board[i][j];
+		}
+	}
+}

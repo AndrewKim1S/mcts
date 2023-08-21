@@ -42,6 +42,7 @@ class ConnectFour {
 		bool playMove(int col);
 		bool checkWin();
 		ConnectFourState getGameState();
+		void setGameState(ConnectFourState s);
 		Player getWinner() {
 			return _winner;
 		}

@@ -36,25 +36,42 @@ int main() {
 	ConnectFourState winner {Player::PLAYER_X};
 
 	MonteCarloTreeSearch<ConnectFourState> mcts {&root, winner};
-	mcts.runSearch();
 
-	//std::cout << mcts << std::endl;
+	auto playConnectFourAI = [&](){
+		bool playerTurn = false;
+		while(!game.checkWin()) {
+			std::cout << game.displayBoard() << std::endl;
+			if(!playerTurn) {
+				std::cout << "Thinking" << std::endl;
+				mcts.runSearch();
+				game.setGameState(mcts.playBestState());
+			} else {
+				int userInput;
+				std::cout << "play Move: " << std::endl;
+				std::cin >> userInput;
+				std::cout << "\n";
+				game.playMove(userInput);
+				//Node<ConnectFourState> s {nullptr, game.getGameState()};
+				mcts.getCurrentGameState(game.getGameState());
+			}
+			playerTurn = !playerTurn;
+		}
+		std::cout << game.displayBoard() << std::endl;
+		auto winner = game.getWinner();
+		if(winner == Player::PLAYER_X) {
+			std::cout << "X wins" << std::endl;
+		} else {
+			std::cout << "O wins" << std::endl;
+		}
+		std::cout << "Game Over" << std::endl;
+	};
 
+	playConnectFourAI();
 	/*
-	std::ofstream dotFile("tree.dot");
-	if(dotFile.is_open()) {
-		std::string dotCode = "digraph Tree{\n";
-		dotCode = mcts.getGraphviz(dotCode);
-		dotCode += "}";
-		dotFile << dotCode;
-		dotFile.close();
-	} else {
-		std::cout << "unable to open file"<< std::endl;
-		return 1;
-	}
-
-	system("dot -Tpng tree.dot -o tree.png");*/
-
+	mcts.runSearch();
+	std::cout << "best move: \n";
+	std::cout << *mcts.getBestState() << std::endl;
+	*/
 
 	return 0;
 }

@@ -5,8 +5,6 @@
 #include <cmath>
 #include <chrono>
 #include <ctime>
-#include <queue>
-#include <stack>
 
 #include "ConnectFour.h"
 
@@ -100,11 +98,13 @@ class MonteCarloTreeSearch {
 		MonteCarloTreeSearch() {}
 		
 		MonteCarloTreeSearch(Node<State> *root, State winner) {
-			_root = root;
+			_root = new Node<State>(nullptr, root->_state);
 			_winning = winner;
 		}
 		
-		~MonteCarloTreeSearch() {}
+		~MonteCarloTreeSearch() {
+			delete _root;
+		}
 	
 		/* Run a monte carlo search for the next best move */
 		void runSearch() {
@@ -112,19 +112,14 @@ class MonteCarloTreeSearch {
 			int iteration = 0;
 
 			while(true) {
-				std::cout << "\nThis is iteration " << iteration << " ----------"<< std::endl;
-				
 				Node<State> *selectedNode = selection(_root);
 				Node<State> *expandedNode = expansion(selectedNode);
-				
-				std::cout << "Expanded Node: \n"<< *expandedNode << std::endl;
-				
 				double simulationResult = simulation(expandedNode);
 				backpropogation(expandedNode, simulationResult);
 
 				auto end = std::chrono::high_resolution_clock::now();
 				std::chrono::duration<double> elapsed = start - end;
-				if(iteration > 5000){
+				if(iteration > 20000){
 					break;
 				}
 				iteration ++;
@@ -161,13 +156,12 @@ class MonteCarloTreeSearch {
 				auto options = gameState.getAllPossibleStates();
 
 				if(options.size() == 0) {
-					return 0.5;
+					return 0.25;
 				}
 				int index = rand()%options.size();
 				gameState = options[index];
 			}
 
-			std::cout << "simulated result: \n"<< gameState << std::endl;
 			return _winning._winner == gameState._winner;
 		}
 
@@ -179,32 +173,24 @@ class MonteCarloTreeSearch {
 				current = current->_parent;
 			}
 		}
-	
 
-		/* text representation of mcts */
-		friend std::ostream& operator<<(std::ostream& os, const MonteCarloTreeSearch &mcts) {
-			/*if(mcts._root == nullptr) {
-				return os;
+		/* Get the node with the highest UCT score */
+		State playBestState() {
+			Node<State> *bestMove;
+			double bestUCTScore = 0.0;
+			for(Node<State>* child : _root->_children) {
+				if(child->getUCTScore() > bestUCTScore) {
+					bestUCTScore = child->getUCTScore();
+					bestMove = child;
+				}
 			}
+			return bestMove->_state;
+		}
 
-			std::stack<std::pair<Node<State>*, std::string>> s;
-			s.push(std::make_pair(mcts._root, ""));
-
-			while(!s.empty()) {
-				Node<State>* current = s.top().first;
-				std::string prefix = s.top().second;
-				s.pop();
-
-				if(!s.empty()) {
-					os << "\u251C\u2500";
-				}
-				os << *current;
-				os << "\n";
-				for(Node<State>* child : current->_children) {
-					s.push(std::make_pair(child, prefix + "  "));
-				}
-			}*/
-			return os;	
+		/* Get the current state of the game */
+		void getCurrentGameState(State s) {
+			delete _root;
+			_root = new Node<State>(nullptr,s);
 		}
 
 	private:
