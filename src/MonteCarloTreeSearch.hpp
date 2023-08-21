@@ -6,6 +6,7 @@
 #include <chrono>
 #include <ctime>
 
+// add games
 #include "ConnectFour.h"
 
 
@@ -97,9 +98,10 @@ class MonteCarloTreeSearch {
 	public:
 		MonteCarloTreeSearch() {}
 		
-		MonteCarloTreeSearch(Node<State> *root, State winner) {
+		MonteCarloTreeSearch(Node<State> *root, State winner, State loser) {
 			_root = new Node<State>(nullptr, root->_state);
 			_winning = winner;
+			_losing = loser;
 		}
 		
 		~MonteCarloTreeSearch() {
@@ -118,12 +120,14 @@ class MonteCarloTreeSearch {
 				backpropogation(expandedNode, simulationResult);
 
 				auto end = std::chrono::high_resolution_clock::now();
-				std::chrono::duration<double> elapsed = start - end;
-				if(iteration > 20000){
+				std::chrono::duration<double> elapsed = end - start;
+				if(elapsed.count() > 15){
 					break;
 				}
 				iteration ++;
 			}
+
+			std::cout << iteration << " simulations were considered" << std::endl;
 		}
 
 		/* Find a leaf node with the best UCT score */
@@ -156,13 +160,15 @@ class MonteCarloTreeSearch {
 				auto options = gameState.getAllPossibleStates();
 
 				if(options.size() == 0) {
-					return 0.25;
+					return 0.0;
 				}
 				int index = rand()%options.size();
 				gameState = options[index];
 			}
 
-			return _winning._winner == gameState._winner;
+			if(_winning._winner == gameState._winner) { return 1; }
+			else if(_losing._winner == gameState._winner) { return -1; }
+			return 0;
 		}
 
 		/* Backpropogate the result to the current root of the tree */
@@ -177,13 +183,14 @@ class MonteCarloTreeSearch {
 		/* Get the node with the highest UCT score */
 		State playBestState() {
 			Node<State> *bestMove;
-			double bestUCTScore = 0.0;
+			double bestScore = 0.0;
 			for(Node<State>* child : _root->_children) {
-				if(child->getUCTScore() > bestUCTScore) {
-					bestUCTScore = child->getUCTScore();
+				if((child->_winNumSim/child->_totalNumSim) > bestScore) {
+					bestScore = child->getUCTScore();
 					bestMove = child;
 				}
 			}
+			std::cout << "Best Node simulation: " << bestMove->_winNumSim/bestMove->_totalNumSim << std::endl;
 			return bestMove->_state;
 		}
 
@@ -196,6 +203,7 @@ class MonteCarloTreeSearch {
 	private:
 		Node<State> *_root;
 		State _winning;
+		State _losing;
 
 		double _timeParameter = 10000; 
 

@@ -234,6 +234,7 @@ ConnectFourState ConnectFour::getGameState() {
 	return _state;
 }
 
+
 void ConnectFour::setGameState(ConnectFourState s) {
 	_currentPlayer = (_currentPlayer == Player::PLAYER_X) ? 
 		Player::PLAYER_O : Player::PLAYER_X;

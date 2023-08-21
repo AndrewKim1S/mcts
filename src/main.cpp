@@ -2,41 +2,18 @@
 #include <fstream>
 
 
-void playConnectFour() {
-	ConnectFour game {6,7};
-	while(!game.checkWin()) {
-		std::cout << game.displayBoard() << std::endl;
-		int userInput;
-		std::cout << "play move: ";
-		std::cin >> userInput;
-		std::cout << "\n";
-		game.playMove(userInput);
-	}
-	
-	std::cout << game.displayBoard() << std::endl;
-	auto winner = game.getWinner();
-	if(winner == Player::PLAYER_X) {
-		std::cout << "X wins" << std::endl;
-	} else {
-		std::cout << "O wins" << std::endl;
-	}
-	std::cout << "Game Over" << std::endl;
-}
-
-
-int main() {
+int main(int argc, char *argv[]) {
 	srand((unsigned)time(0));
 
 	ConnectFour game {6,7};
-
 	ConnectFourState start {game.getGameState()};
-	auto nextStates = start.getAllPossibleStates();
-	
 	Node<ConnectFourState> root {nullptr, start};
 	ConnectFourState winner {Player::PLAYER_X};
+	ConnectFourState loser {Player::PLAYER_O};
 
-	MonteCarloTreeSearch<ConnectFourState> mcts {&root, winner};
+	MonteCarloTreeSearch<ConnectFourState> mcts {&root, winner, loser};
 
+	// Play Connect Four against AI
 	auto playConnectFourAI = [&](){
 		bool playerTurn = false;
 		while(!game.checkWin()) {
@@ -67,11 +44,8 @@ int main() {
 	};
 
 	playConnectFourAI();
-	/*
-	mcts.runSearch();
-	std::cout << "best move: \n";
-	std::cout << *mcts.getBestState() << std::endl;
-	*/
 
 	return 0;
 }
+
+
