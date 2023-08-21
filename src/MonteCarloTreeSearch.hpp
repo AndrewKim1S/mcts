@@ -5,6 +5,8 @@
 #include <cmath>
 #include <chrono>
 #include <ctime>
+#include <queue>
+#include <stack>
 
 #include "ConnectFour.h"
 
@@ -71,12 +73,12 @@ class Node {
 		/* text representation of node */
 		friend std::ostream& operator<<(std::ostream& os, const Node<State> &n) { 
 			os << n._state;
-			os << "\nUCT Score: " ;
+			os << "\nUCT Score: ";
 			os << n._uctScore;
 			os << "\n";
 			return os;
 		}
-		
+
 		State _state;
 		Node *_parent;
 		std::vector<Node*> _children;
@@ -110,14 +112,19 @@ class MonteCarloTreeSearch {
 			int iteration = 0;
 
 			while(true) {
+				std::cout << "\nThis is iteration " << iteration << " ----------"<< std::endl;
+				
 				Node<State> *selectedNode = selection(_root);
 				Node<State> *expandedNode = expansion(selectedNode);
+				
+				std::cout << "Expanded Node: \n"<< *expandedNode << std::endl;
+				
 				double simulationResult = simulation(expandedNode);
 				backpropogation(expandedNode, simulationResult);
-				
+
 				auto end = std::chrono::high_resolution_clock::now();
 				std::chrono::duration<double> elapsed = start - end;
-				if(iteration > 500){
+				if(iteration > 5000){
 					break;
 				}
 				iteration ++;
@@ -148,13 +155,19 @@ class MonteCarloTreeSearch {
 		}
 
 		/* Simulate the node until an endgame state is reached */
-		// TODO error 
 		double simulation(Node<State> *node) {
 			State gameState = node->_state;
 			while(!gameState.gameOver()) {
 				auto options = gameState.getAllPossibleStates();
-				gameState = options[rand()%options.size()];
+
+				if(options.size() == 0) {
+					return 0.5;
+				}
+				int index = rand()%options.size();
+				gameState = options[index];
 			}
+
+			std::cout << "simulated result: \n"<< gameState << std::endl;
 			return _winning._winner == gameState._winner;
 		}
 
@@ -167,18 +180,39 @@ class MonteCarloTreeSearch {
 			}
 		}
 	
+
 		/* text representation of mcts */
 		friend std::ostream& operator<<(std::ostream& os, const MonteCarloTreeSearch &mcts) {
+			/*if(mcts._root == nullptr) {
+				return os;
+			}
+
+			std::stack<std::pair<Node<State>*, std::string>> s;
+			s.push(std::make_pair(mcts._root, ""));
+
+			while(!s.empty()) {
+				Node<State>* current = s.top().first;
+				std::string prefix = s.top().second;
+				s.pop();
+
+				if(!s.empty()) {
+					os << "\u251C\u2500";
+				}
+				os << *current;
+				os << "\n";
+				for(Node<State>* child : current->_children) {
+					s.push(std::make_pair(child, prefix + "  "));
+				}
+			}*/
 			return os;	
 		}
-		
+
 	private:
 		Node<State> *_root;
 		State _winning;
 
 		double _timeParameter = 10000; 
 
-		
 
 };
 
